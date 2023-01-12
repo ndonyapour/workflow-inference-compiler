@@ -1,0 +1,71 @@
+steps:
+- sander_mdrun:
+    in:
+      input_top_path: '*complex_ions.prmtop'
+      input_crd_path: '*complex_nvt.rst7'
+      input_ref_path: '*complex_nvt.rst7'
+      output_traj_path: '&complex_npt.crd'
+      output_rst_path: '&complex_npt.rst7'
+      output_log_path: '&complex_npt.log'
+      config:
+        simulation_type: minimization
+        mdin:
+          imin: 0     # Minimization flag, perform an energy minimization.
+          ntx: 5     # Read coordinates and velocities from ASCII formatted rst7 coordinate file
+          irest: 1    # Can only restart if there velocities...
+          cut: 10.0   # Cutoff for non bonded interactions in Angstroms
+          ntc: 2      # SHAKE for constraining length of bonds involving Hydrogen atoms
+          ntf: 2      # Bond interactions involving H omitted
+          ntt: 3      # Constant temperature using Langevin dynamics
+          ig: -1      # Seed for pseudo-random number generator
+          ioutfm: 1   # ioutfm 0: ascii, 1: binary
+          iwrap: 1    # Wrap coords into primary box
+          # Limit to 10 steps of minimization
+          nstlim: 5000     # Number of MD steps
+          dt: 0.002        # Time step (in ps)
+          temp0: 298.0     # Temperature (298 K)
+          gamma_ln: 5.0    # Collision frequency for Langevin dynamics (in 1/ps)
+          ntp: 1           # Constant pressure dynamics: md with isotropic position scaling
+          taup: 2.0        # Pressure relaxation time (in ps)
+          pres0: 1.0       # Reference pressure
+          ntpr: 5000       # Print to the Amber mdout output file every ntpr cycles
+          ntwx: 5000       # Write coordinates trajectory file every ntwx cycles
+          ntwr: 5000       # Write restrt file every ntwr cyles
+          ntxo: 1          # Format of the final coordinates, velocities, and box siz, default is 1
+          ntr: 0           # Turn off positional restraint
+- process_mdout:
+    in:
+      input_log_path: '*complex_npt.log'
+      config:
+        terms: [DENSITY]
+      output_dat_path: density.dat
+- cwl_watcher:
+    in:
+      #cachedir_path: /absolute/path/to/cachedir/ (automatically filled in by wic)
+      file_pattern: ' *complex_npt.log'
+      cwl_tool: process_mdout
+      max_times: '20'
+      config:
+        in:
+          input_log_path: complex_npt.log
+          config:
+            terms: [DENSITY]
+          output_dat_path: density_npt.dat
+
+wic:
+  graphviz:
+    label: Constant\nPressure
+  steps:
+    (1, sander_mdrun):
+      wic:
+        graphviz:
+          label: 'Molecular\nDynamics'
+    (2, process_mdout):
+      wic:
+        graphviz:
+          label: 'Analyze & Plot\nDensity\nTimeseries'
+    (3, cwl_watcher):
+      wic:
+        graphviz:
+          label: 'Real-time\nAnalysis'
+          style: invis # Make this node invisible

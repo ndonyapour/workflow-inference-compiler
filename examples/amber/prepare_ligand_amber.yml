@@ -1,0 +1,53 @@
+steps:
+  # Create ligand system topology
+- reduce_add_hydrogens: # Add hydrogen atoms
+    in:
+      input_path: '*ligand.pdb'
+      output_path: '&ligand_reduce_H.pdb'
+      config:
+        nuclear: true
+- babel_minimize: # Minimize the system with the new hydrogen atoms
+    in:
+      input_path: '*ligand_reduce_H.pdb'
+      output_path: '&ligand_reduce_H_min.mol2'
+      config:
+        method: sd
+        criteria: 1e-10
+        force_field: GAFF
+- python3_calculate_net_charge:
+    in:
+      script: /calculate_net_charge.py
+      input_path: '*ligand_reduce_H_min.mol2'
+      output_log_path: calc_charge_log
+      net_charge: '&mol_charge'
+- acpype_ac: # Generate ligand topology
+    in:
+      input_path: '*ligand_reduce_H_min.mol2'
+      output_path_inpcrd: '&ligand_params.inpcrd'
+      output_path_frcmod: '&ligand_params.frcmod'
+      output_path_lib: '&ligand_params.lib'
+      output_path_prmtop: '&ligand_params.prmtop'
+      base_name: output_acpype
+      net_charge: '*mol_charge'
+- amber_to_pdb:
+    in:
+      input_top_path: '*ligand_params.prmtop'
+      input_crd_path: '*ligand_params.inpcrd'
+      output_pdb_path: '&ligand_reduce_H_min.pdb'
+
+wic:
+  graphviz:
+    label: Prepare Ligand
+  steps:
+    (1, reduce_add_hydrogens):
+      wic:
+        graphviz:
+          label: Add hydrogen atoms
+    (2, babel_minimize):
+      wic:
+        graphviz:
+          label: Minimize the System
+    (3, acpype_params_ac):
+      wic:
+        graphviz:
+          label: Generate the Ligand Topology

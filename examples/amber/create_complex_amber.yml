@@ -1,0 +1,88 @@
+
+steps:
+- cat_pdb:
+    in:
+      input_structure1: '*protein_fix_side_chain.pdb'
+      input_structure2: '*ligand_reduce_H_min.pdb'
+      output_structure_path: '&complex_vac.pdb'
+- pdb4amber_run:
+    in:
+      input_pdb_path: '*complex_vac.pdb'
+      output_pdb_path: '&complex_pdb4amber.pdb'
+- leap_gen_top:
+    in:
+      input_pdb_path: '*complex_pdb4amber.pdb'
+      input_lib_path: '*ligand_params.lib'
+      input_frcmod_path: '*ligand_params.frcmod'
+      output_pdb_path: '&complex_leap.pdb'
+      output_top_path: '&complex_leap.prmtop'
+      output_crd_path: '&complex_leap.crd'
+      config:
+        forcefield: ["protein.ff14SB","gaff"]
+- sander_mdrun: #Hydrogen minimization
+    in:
+      input_top_path: '*complex_leap.prmtop'
+      input_crd_path: '*complex_leap.crd'
+      input_ref_path: '*complex_leap.crd'
+      output_traj_path: '&sander_h_min.crd'
+      output_rst_path: '&sander_h_min.rst7'
+      output_log_path: '&sander_h_min.log'
+      config:
+        simulation_type: min_vacuo
+        mdin:
+          ncyc: 500 # run the steepest descent algorithm for the first ncyc steps
+          maxcyc: 1000 # conjugate gradient algorithm for the maxcyce - ncyc steps
+          ntpr: 1
+          ntr: 1
+          ntmin: 1 # For ncyc cycles the steepest descent method is used then conjugate gradient is switched on
+          dx0: 0.0001 # The initial step length, default is 0.01
+          ntb: 0
+          igb: 0
+          restraintmask: ":*&!@H="
+          restraint_wt: 50.0
+          ntwx: 1 # to generate output traj
+
+- process_minout:
+      in:
+        input_log_path: '*sander_h_min.log'
+        config:
+          terms: ['ENERGY']
+        output_dat_path: sander_h_min.energy.dat
+
+# System minimization, with restraints only on the small molecule to
+# avoid a possible change in position due to protein repulsion.
+- sander_mdrun:
+    in:
+      input_top_path: '*complex_leap.prmtop'
+      input_crd_path: '*sander_h_min.rst7'
+      input_ref_path: '*complex_leap.crd'
+      output_traj_path: '&sander_m_min.crd'
+      output_rst_path: '&sander_m_min.rst7'
+      output_log_path: '&sander_m_min.log'
+      config:
+        simulation_type: min_vacuo
+        mdin:
+          ncyc: 500 # run the steepest descent algorithm for the first ncyc steps
+          maxcyc: 1000 # conjugate gradient algorithm for the maxcyce - ncyc steps
+          ntpr: 1
+          ntr: 1
+          ntmin: 1 # For ncyc cycles the steepest descent method is used then conjugate gradient is switched on
+          dx0: 0.0001 # The initial step length, default is 0.01
+          ntb: 0
+          igb: 0
+          restraintmask: ":MOL"
+          restraint_wt: 500.0
+          ntwx: 1 # to generate output traj
+
+- process_minout:
+    in:
+      input_log_path: '*sander_m_min.log'
+      output_dat_path: sander_m_min.energy.dat
+      config:
+        terms: ['ENERGY']
+
+- amber_to_pdb:
+    in:
+      input_top_path: '*complex_leap.prmtop'
+      input_crd_path: '*sander_m_min.rst7'
+      output_pdb_path: '&complex_min_vac.pdb'

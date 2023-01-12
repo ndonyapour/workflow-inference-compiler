@@ -1,0 +1,18 @@
+steps:
+- cpptraj_image:
+    in:
+      input_top_path: '*complex_ions.prmtop'
+      input_traj_path: '*complex_prod.crd'
+      output_cpptraj_path: 'complex_solvent_prod_imaged_traj.trr'
+      config:
+        mask: 'solute'
+        format: 'trr'
+
+wic:
+  graphviz:
+    label: Final Analysis
+  steps:
+    (1, cpptraj_image):
+      wic:
+        graphviz:
+          label: Wrap Periodic\nFinal trajectory

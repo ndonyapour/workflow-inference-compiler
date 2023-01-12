@@ -1,0 +1,93 @@
+steps:
+- cpptraj_strip_ambmask:
+    in:
+      input_top_path: '*complex_ions.prmtop'
+      input_traj_path: '*complex_prod.crd'
+      output_cpptraj_path: '&ligand_prod.crd'
+      config:
+        mask: "!:MOL"
+        format: "crd"
+
+- cpptraj_rms:
+    in:
+      input_top_path: '*ligand_params.prmtop'
+      input_traj_path: '*ligand_prod.crd'
+      output_cpptraj_path: 'rmsd_equil_ligand.dat'
+      config:
+        reference: 'first'
+- cpptraj_rms:
+    in:
+      input_top_path: '*complex_ions.prmtop'
+      input_traj_path: '*complex_prod.crd'
+      output_cpptraj_path: 'rmsd_xray_sidechain.dat'
+      input_exp_path: '*complex_leap.pdb'
+      config:
+        mask: "backbone"
+        reference: 'experimental'
+- cpptraj_strip:
+    in:
+      input_top_path: '*complex_ions.prmtop'
+      input_traj_path: '*complex_prod.crd'
+      output_cpptraj_path: '&complex_prod_traj.trr'
+      config:
+        format: 'trr'
+- amber_to_pdb:
+    in:
+      input_top_path: '*complex_ions.prmtop'
+      input_crd_path: '*complex_prod.crd'
+      output_pdb_path: '&complex_prod.pdb'
+# Align the trajectory with MDAnalysis.
+- python3_align_protein_CA:
+    in:
+      script: /align_protein_CA_mda.py # NOTE: Initial / required
+      input_gro_path: '*complex_prod.pdb'
+      input_trr_path: '*complex_prod_traj.trr'
+      output_trr_path: '&prod_align_protein_CA.trr'
+
+
+- cpptraj_strip_ambmask:
+    in:
+      input_top_path: '*complex_ions.prmtop'
+      input_traj_path: '*prod_align_protein_CA.trr'
+      output_cpptraj_path: '&prod_aligan_ligand.crd'
+      config:
+        mask: "!:MOL"
+        format: "crd"
+- cpptraj_rms_nofit:
+    in:
+      input_top_path: '*ligand_params.prmtop'
+      input_traj_path: '*prod_aligan_ligand.crd'
+      output_cpptraj_path: 'rmsd_equil_ligand_no_fit.dat'
+      config:
+        reference: 'first'
+        remove_tmp: False
+
+
+
+
+
+# wic:
+#   graphviz:
+#     #label: Real-time Analysis
+#     style: invis # Make this subgraph invisible (but NOT the parent graph).
+#     ranksame:
+#     - (1, cpptraj_rms)
+#     - (2, cpptraj_rms)
+#     - (3, cpptraj_rms)
+#   steps:
+#     (1, cpptraj_rms):
+#       wic:
+#         graphviz:
+#           label: Mainchain RMSD\nw.r.t. Equil Coords
+#     (2, cpptraj_rms):
+#       wic:
+#         graphviz:
+#           label: Sidechain RMSD\nw.r.t. Equil Coords
+#     (3, cpptraj_rms):
+#       wic:
+#         graphviz:
+#           label: Mainchain RMSD\nw.r.t. X-ray Coords
+#     (4, cpptraj_rgyr):
+#       wic:
+#         graphviz:
+#           label: Radius of\nGyration

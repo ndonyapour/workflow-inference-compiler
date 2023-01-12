@@ -1,0 +1,56 @@
+steps:
+- sander_mdrun:
+    in:
+      input_top_path: '*complex_ions.prmtop'
+      input_crd_path: '*complex_energy_min.rst7'
+      input_ref_path: '*complex_energy_min.rst7'
+      output_traj_path: '&complex_heat.crd'
+      output_rst_path: '&complex_heat.rst7'
+      output_log_path: '&complex_heat.log'
+      config:
+        simulation_type: md
+        mdin:
+          imin: 0     # Minimization flag, perform an energy minimization.
+          ntx: 1      # Read coordinates and velocities from ASCII formatted rst7 coordinate file
+          irest: 0    # Can only restart if there velocities...
+          cut: 10.0   # Cutoff for non bonded interactions in Angstroms
+          ntb: 1      # Periodic boundary conditions at constant volume
+          ntc: 2      # SHAKE for constraining length of bonds involving Hydrogen atoms
+          ntf: 2      # Bond interactions involving H omitted
+          ntt: 3      # Constant temperature using Langevin dynamics
+          ig: -1      # Seed for pseudo-random number generator
+          ioutfm: 1   # ioutfm 0: ascii, 1: binary
+          iwrap: 1    # Wrap coords into primary box
+          nstlim: 5000       # Number of MD steps
+          dt: 0.002          # Time step (in ps)
+          tempi: 0.0         # Initial temperature (0 K)
+          temp0: 300.0       # Final temperature (300 K)
+          gamma_ln: 1.0      # Collision frequency for Langevin dynamics (in 1/ps)
+          ntpr: 5000         # Print to the Amber mdout output file every ntpr cycles
+          ntwx: 5000         # Write coordinates trajectory file every ntwx cycles
+          ntwr: 5000         # Write restrt file every ntwr cyles
+          ntxo: 1            # Format of the final coordinates, velocities, and box siz, default is 1
+          ntr: 0             # Turn off positional restraint
+
+- process_mdout:
+    in:
+      input_log_path: '*complex_heat.log'
+      output_dat_path: '&complex_heat.dat'
+      config:
+        terms: ['TEMP']
+- cwl_watcher:
+    in:
+      #cachedir_path: /absolute/path/to/cachedir/ (automatically filled in by wic)
+      file_pattern: '*complex_heat.log'
+      cwl_tool: process_mdout
+      max_times: '20'
+      config:
+        in:
+          input_log_path: complex_heat.log
+          config:
+            terms: ['ENERGY']
+          output_dat_path: complex_heat_min.dat
+
+# wic:
+#   graphviz:
+#     label: Minimization

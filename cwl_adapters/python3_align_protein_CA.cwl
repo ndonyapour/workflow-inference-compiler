@@ -27,6 +27,7 @@ inputs:
     type: File
     format:
     - edam:format_2033 # Gromacs structure *.gro
+    - edam:format_1476 # pdb
     inputBinding:
       position: 2
 
@@ -37,6 +38,7 @@ inputs:
     type: File
     format:
     - edam:format_3910 # Gromacs trajectory *.trr
+    - edam:format_3878 # Amber structure *.crd
     inputBinding:
       position: 3
 
