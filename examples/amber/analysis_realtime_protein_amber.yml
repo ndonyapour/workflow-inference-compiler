@@ -1,62 +1,70 @@
 steps:
-- cpptraj_rms:
-    in:
-      input_top_path: '*complex_ions.prmtop'
-      input_traj_path: '*complex_prod.crd'
-      output_cpptraj_path: 'rmsd_equil_mainchain.dat'
-      config:
-        mask: "backbone"
-        reference: 'first'
-        remove_tmp: False
-- cpptraj_rms:
-    in:
-      input_top_path: '*complex_ions.prmtop'
-      input_traj_path: '*complex_prod.crd'
-      output_cpptraj_path: 'rmsd_equil_sidechain.dat'
-      config:
-        mask: "side-chain"
-        reference: 'first'
-- cpptraj_rms:
-    in:
-      input_top_path: '*complex_ions.prmtop'
-      input_traj_path: '*complex_prod.crd'
-      output_cpptraj_path: 'rmsd_xray_sidechain.dat'
-      input_exp_path: '*complex_leap.pdb'
-      config:
-        mask: "backbone"
-        reference: 'experimental'
-        remove_temp: False
-- cpptraj_rgyr:
-    in:
-      input_top_path: '*complex_ions.prmtop'
-      input_traj_path: '*complex_prod.crd'
-      output_cpptraj_path: 'radius_gyration.dat'
-      config:
-        mask: "backbone"
+  - cpptraj_rms:
+      in:
+        input_top_path: '*complex_ions.prmtop'
+        input_traj_path: '*complex_prod.crd'
+        output_cpptraj_path: 'rmsd_equil_mainchain.dat'
+        config:
+          mask: "backbone"
+          reference: 'first'
+  - cpptraj_rms:
+      in:
+        input_top_path: '*complex_ions.prmtop'
+        input_traj_path: '*complex_prod.crd'
+        output_cpptraj_path: 'rmsd_equil_sidechain.dat'
+        config:
+          mask: "side-chain"
+          reference: 'first'
+  - cpptraj_rms:
+      in:
+        input_top_path: '*complex_ions.prmtop'
+        input_traj_path: '*complex_prod.crd'
+        output_cpptraj_path: 'rmsd_xray_mainchain.dat'
+        input_exp_path: '*complex_leap.pdb'
+        config:
+          mask: "backbone"
+          reference: 'experimental'
+  - cpptraj_rgyr:
+      in:
+        input_top_path: '*complex_ions.prmtop'
+        input_traj_path: '*complex_prod.crd'
+        output_cpptraj_path: 'radius_gyration.dat'
+        config:
+          mask: "backbone"
+  - process_mdout:
+      in:
+        input_log_path: '*amb_prod.log'
+        config:
+          terms: ['ETOT']
+        output_dat_path: total_energy_prod.dat
 
-# wic:
-#   graphviz:
-#     #label: Real-time Analysis
-#     style: invis # Make this subgraph invisible (but NOT the parent graph).
-#     ranksame:
-#     - (1, cpptraj_rms)
-#     - (2, cpptraj_rms)
-#     - (3, cpptraj_rms)
-#   steps:
-#     (1, cpptraj_rms):
-#       wic:
-#         graphviz:
-#           label: Mainchain RMSD\nw.r.t. Equil Coords
+wic:
+  graphviz:
+    #label: Real-time Analysis
+    style: invis # Make this subgraph invisible (but NOT the parent graph).
+    ranksame:
+    - (1, cpptraj_rms)
+    - (2, cpptraj_rms)
+    - (3, cpptraj_rms)
+  steps:
+    (1, cpptraj_rms):
+      wic:
+        graphviz:
+          label: Mainchain RMSD\nw.r.t. Equil Coords
 
-#     (2, cpptraj_rms):
-#       wic:
-#         graphviz:
-#           label: Sidechain RMSD\nw.r.t. Equil Coords
-#     (3, cpptraj_rms):
-#       wic:
-#         graphviz:
-#           label: Mainchain RMSD\nw.r.t. X-ray Coords
-#     (4, cpptraj_rgyr):
-#       wic:
-#         graphviz:
-#           label: Radius of\nGyration
+    (2, cpptraj_rms):
+      wic:
+        graphviz:
+          label: Sidechain RMSD\nw.r.t. Equil Coords
+    (3, cpptraj_rms):
+      wic:
+        graphviz:
+          label: Mainchain RMSD\nw.r.t. X-ray Coords
+    (4, cpptraj_rgyr):
+      wic:
+        graphviz:
+          label: Radius of\nGyration
+    (5, process_mdout):
+      wic:
+        graphviz:
+          label: 'Analyze\nEnergy\nTimeseries'

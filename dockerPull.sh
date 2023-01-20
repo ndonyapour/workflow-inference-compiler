@@ -7,3 +7,6 @@ docker pull jakefennick/autodock_vina
 docker pull jakefennick/data
 docker pull jakefennick/scripts
 docker pull jakefennick/biosimspace
+docker pull ndonyapour/scripts
+docker pull ndonyapour/biobb_analysis
+docker pull ndonyapour/biobb_amber

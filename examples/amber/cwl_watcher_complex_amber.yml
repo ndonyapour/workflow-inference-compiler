@@ -1,0 +1,30 @@
+steps:
+  - cwl_watcher:
+      in:
+        #cachedir_path: /absolute/path/to/cachedir/ (automatically filled in by wic)
+        file_pattern: 'complex_prod.crd' # This * is a glob wildcard, NOT an explicit edge!
+        cwl_tool: analysis_realtime_protein_amber.yml
+        max_times: '20'
+        config:
+          '(1, cpptraj_strip_ambmask)': {in: {input_top_path: complex_ions.prmtop, input_traj_path: complex_prod.crd}}
+          '(2, cpptraj_rms)': {in: {input_top_path: ligand_params.prmtop, input_traj_path: ligand_prod.crd}}
+          '(3, cpptraj_rms)': {in: {input_top_path: complex_ions.prmtop, input_traj_path: complex_prod.crd}}
+          '(4, cpptraj_rms)': {in: {input_top_path: complex_ions.prmtop, input_traj_path: complex_prod.crd}}
+          '(5, cpptraj_convert)': {in: {input_top_path: complex_ions.prmtop, input_traj_path: complex_prod.crd}}
+          '(6, amber_to_pdb)': {in: {input_top_path: complex_ions.prmtop, input_crd_path: complex_prod.rst7}}
+          '(7, python3_align_protein_CA)': {in: {
+                            input_gro_path: complex_prod.pdb,
+                            input_trr_path: complex_prod_traj.trr,
+                            output_trr_path: prod_align_protein_CA.trr}}
+          '(8, cpptraj_strip_ambmask)': {in: {input_top_path: complex_ions.prmtop, input_traj_path: prod_align_protein_CA.trr}}
+
+          '(9, gmx_rms_nofit)': {in: {input_structure_path: ligand_params.prmtop,
+                                      input_traj_path: prod_aligan_ligand_CA.crd}}
+
+
+wic:
+  steps:
+    (1, cwl_watcher):
+      wic:
+        graphviz:
+          style: invis # Make this node invisible

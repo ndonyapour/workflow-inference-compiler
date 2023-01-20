@@ -9,44 +9,58 @@ inputs:
     type: float
 
 steps:
-- config_tag_mdin:
-    in:
-      nstlim: ~nsteps
-      dt: ~dt # ps
-      temp0: ~temperature # K
-      pres0: ~pressure  #
-      config:
-        simulation_type: free
-        mdin:
-          imin: 0     # Minimization flag, perform an energy minimization.
-          # Use ntx: 1+2+4 (?) to set coordinates, velocities, and box vectors
-          ntx: 5     # Read coordinates and velocities from ASCII formatted rst7 coordinate file
-          irest: 1    # Can only restart if there velocities...
-          cut: 10.0   # Cutoff for non bonded interactions in Angstroms
-          ntc: 2      # SHAKE for constraining length of bonds involving Hydrogen atoms
-          ntf: 2      # Bond interactions involving H omitted
-          ntt: 3      # Constant temperature using Langevin dynamics
-          ig: -1      # Seed for pseudo-random number generator
-          ioutfm: 1   # ioutfm 0: ascii, 1: binary
-          iwrap: 1    # Wrap coords into primary box
-          # sander_mdrun.cwl expects all output files to exist, so set the nt params to maxcyc.
-          ntpr: 500     # Print to the Amber mdout output file every ntpr cycles
-          ntwx: 500       # Write coordinates trajectory file every ntwx cycles
-          ntwr: 500       # Write restrt file every ntwr cyles
-          ntxo: 1     # Format of the final coordinates, velocities, and box siz, default is 1
-          ntr: 0        # Turn off positional restraint
-      output_config_string: '&config_tag_mdin_prod'
-- sander_mdrun:
-    in:
-      input_top_path: '*complex_ions.prmtop'
-      input_crd_path: '*complex_npt.rst7'
-      input_ref_path: '*complex_npt.rst7'
-      output_traj_path: '&complex_prod.crd'
-      output_rst_path: '&complex_prod.rst7'
-      output_log_path: '&complex_prod.log'
-      config: '*config_tag_mdin_prod'
+  - config_tag_mdin:
+      in:
+        nstlim: ~nsteps
+        dt: ~dt # ps
+        temp0: ~temperature # K
+        pres0: ~pressure  #
+        config:
+          mdin:
+            imin: 0     # No minimization
+            ntx: 5      # Read coordinates and velocities from ASCII formatted rst7 coordinate file
+            irest: 1    # Can only restart if there velocities...
+            cut: 10.0   # Cutoff for non bonded interactions in Angstroms
+            ntc: 2      # SHAKE for constraining length of bonds involving Hydrogen atoms
+            ntf: 2      # Bond interactions involving H omitted
+            ntt: 3      # Constant temperature using Langevin dynamics
+            ig: -1      # Seed for pseudo-random number generator
+            ioutfm: 1   # ioutfm 0: ascii, 1: binary
+            iwrap: 1    # Wrap coords into primary box
+            gamma_ln: 2.0      # Collision frequency for Langevin dynamics (in 1/ps)
+            taup: 1.0        # Pressure relaxation time (in ps)
+            ntpr: 100       # Print to the Amber mdout output file every ntpr cycles
+            ntwx: 100       # Write coordinates trajectory file every ntwx cycles
+            ntwr: 100       # Write restrt file every ntwr cyles
+            ntxo: 1         # Format of the final coordinates, velocities, and box siz, default is 1
+            ntr: 0          # Turn off positional restraint
+        output_config_string: '&config_tag_mdin_prod'
+  - sander_mdrun:
+      in:
+        input_top_path: '*complex_ions.prmtop'
+        input_crd_path: '*complex_npt.rst7'
+        input_ref_path: '*complex_npt.rst7'
+        output_traj_path: '&complex_prod.crd'
+        output_rst_path: '&complex_prod.rst7'
+        output_log_path: '&amb_prod.log'
+        config: '*config_tag_mdin_prod'
+  - cwl_watcher_analysis_amber.yml:
 
-
-# wic:
-#   graphviz:
-#     label: Minimization
+wic:
+  graphviz:
+    label: Production
+  steps:
+    (1, config_tag_mdin):
+      wic:
+        graphviz:
+          label: 'Configure Default\nAmber Options'
+    (2, sander_mdrun):
+      wic:
+        graphviz:
+          label: 'Molecular\nDynamics'
+    (4, cwl_watcher_analysis_amber.yml):
+      wic:
+        backend: protein
+        graphviz:
+          label: 'Real-time\nAnalysis'
+          style: invis # Make this node invisible

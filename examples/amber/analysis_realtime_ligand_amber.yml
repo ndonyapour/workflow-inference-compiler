@@ -1,31 +1,35 @@
 # Computing Root Mean Square deviation to analyse structural stability
 # RMSd against minimized and equilibrated snapshot (ligand)
 steps:
-- cpptraj_strip_ambmask:
-    in:
-      input_top_path: '*complex_ions.prmtop'
-      input_traj_path: '*complex_prod.crd'
-      output_cpptraj_path: '&ligand_prod.crd'
-      config:
-        mask: "!:MOL"
-        format: "crd"
+  - cpptraj_strip_ambmask:
+      in:
+        input_top_path: '*complex_ions.prmtop'
+        input_traj_path: '*complex_prod.crd'
+        output_cpptraj_path: '&ligand_prod.crd'
+        config:
+          mask: "!:MOL"
+          format: "crd"
 
-- cpptraj_rms:
-    in:
-      input_top_path: '*ligand_params.prmtop'
-      input_traj_path: '*ligand_prod.crd'
-      output_cpptraj_path: 'rmsd_equil_ligand.dat'
-      config:
-        reference: 'first'
-
-# wic:
-#   graphviz:
-#     #label: Real-time Analysis
-#     style: invis # Make this subgraph invisible (but NOT the parent graph).
-#     ranksame:
-#     - (1, cpptraj_rms)
-#   steps:
-#     (1, cpptraj_rms):
-#       wic:
-#         graphviz:
-#           label: Ligand RMSD (fit)\nw.r.t. Equil Coords
+  - cpptraj_rms:
+      in:
+        input_top_path: '*ligand_params.prmtop'
+        input_traj_path: '*ligand_prod.crd'
+        output_cpptraj_path: 'rmsd_equil_ligand.dat'
+        config:
+          reference: 'first'
+wic:
+  graphviz:
+    #label: Real-time Analysis
+    style: invis # Make this subgraph invisible (but NOT the parent graph).
+    ranksame:
+    - (1, cpptraj_strip_ambmask)
+    - (2, cpptraj_rms)
+  steps:
+    (1, cpptraj_strip_ambmask):
+      wic:
+        graphviz:
+          label: Make Ligand Traj
+    (2, cpptraj_rms):
+      wic:
+        graphviz:
+          label: Ligand RMSD (fit)\nw.r.t. Equil Coords

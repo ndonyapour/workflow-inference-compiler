@@ -1,53 +1,64 @@
 steps:
-- sander_mdrun:
-    in:
-      input_top_path: '*complex_ions.prmtop'
-      input_crd_path: '*complex_ions.rst7'
-      input_ref_path: '*complex_ions.rst7'
-      #input_mdin_path: min.mdin
-      output_traj_path: 'complex_energy_min.crd'
-      output_rst_path: '&complex_energy_min.rst7'
-      output_log_path: '&complex_energy_min.log'
-      config:
-        simulation_type: minimization
-        mdin:
-          imin: 1    # Minimization flag, perform an energy minimization.
-          ntx: 1     # Read coordinates but not velocities from ASCII formatted rst7 coordinate file (not a restart)
-          irest: 0   # Do not restart simulation. (not applicable to minimization)
-          cut: 10.0  # cutoff
-          ntb: 1     # Periodic boundaries with constant volume.
-          ntf: 1     # Bond interactions involving H omitted
-          ig: -1     # Seed for pseudo-random number generator
-          ioutfm: 0  # ioutfm 0: ascii, 1: binary
-          iwrap: 1   # Wrap coords into primary box
-          maxcyc: 1000 # The maximum number of cycles of minimization.
-          ntpr: 1000  # Print to the Amber mdout output file every ntpr cycles
-          ntwx: 1000  # Write coordinates trajectory file every ntwx cycles
-          ntwr: 1000  # Write restrt file every ntwr cyles
-          ntxo: 1   # Format of the final coordinates, velocities, and box siz, default is 1
-          ntr: 1    # Overwritting restrain parameter
-          restraintmask: "!:WAT,Cl-,Na+"  # Restraining solute
-          restraint_wt: 15.0  #With a force constant of 15 Kcal/mol*A2
+  - sander_mdrun:
+      in:
+        input_top_path: '*complex_ions.prmtop'
+        input_crd_path: '*complex_ions.rst7'
+        input_ref_path: '*complex_ions.rst7'
+        output_traj_path: 'complex_energy_min.crd'
+        output_rst_path: '&complex_energy_min.rst7'
+        output_log_path: '&amb_min.log'
+        config:
+          simulation_type: minimization
+          mdin:
+            imin: 1    # Minimization flag, perform an energy minimization.
+            ntx: 1     # Read coordinates but not velocities from ASCII formatted rst7 coordinate file (not a restart)
+            irest: 0   # Do not restart simulation. (not applicable to minimization)
+            cut: 10.0  # cutoff
+            ntb: 1     # Periodic boundaries with constant volume.
+            ntf: 1     # Bond interactions involving H omitted
+            ig: -1     # Seed for pseudo-random number generator
+            ioutfm: 0  # ioutfm 0: ascii, 1: binary
+            iwrap: 1   # Wrap coords into primary box
+            maxcyc: 200 #10000  # The maximum number of cycles of minimization.
+            ntpr: 1  # Print to the Amber mdout output file every ntpr cycles
+            ntwx: 1  # Write coordinates trajectory file every ntwx cycles
+            ntwr: 1  # Write restrt file every ntwr cyles
+            ntxo: 1   # Format of the final coordinates, velocities, and box siz, default is 1
+            ntr: 1    # Overwritting restrain parameter
+            restraintmask: "!:WAT,Cl-,Na+"  # Restraining solute
+            restraint_wt: 15.0  #With a force constant of 15 Kcal/mol*A2
 
-- process_minout:
-    in:
-      input_log_path: '*complex_energy_min.log'
-      output_dat_path: '&complex_energy_min.dat'
-      config:
-        terms: ['ENERGY']
-
-- cwl_watcher:
-    in:
-      file_pattern: '*complex_energy_min.log'
-      cwl_tool: process_minout
-      max_times: '20'
-      config:
-        in:
-          input_log_path: complex_energy_min.log
-          config:
-            terms: ['ENERGY']
-          output_dat_path: energy_min.dat
-
-# wic:
-#   graphviz:
-#     label: Minimization
+  - process_minout:
+      in:
+        input_log_path: '*amb_min.log'
+        config:
+          terms: ['ENERGY']
+        output_dat_path: energy_min.dat
+  - cwl_watcher:
+      in:
+        file_pattern: '*amb_min.log'
+        cwl_tool: process_minout
+        max_times: '20'
+        config:
+          in:
+            input_log_path: amb_min.log
+            config:
+              terms: [ENERGY]
+            output_dat_path: energy_min.dat
+wic:
+  graphviz:
+    label: Minimization
+  steps:
+    (1, sander_mdrun):
+      wic:
+        graphviz:
+          label: 'Molecular\nDynamics'
+    (2, process_minout):
+      wic:
+        graphviz:
+          label: 'Analyze & Plot\nEnergy\nTimeseries'
+    (3, cwl_watcher):
+      wic:
+        graphviz:
+          label: 'Real-time\nAnalysis'
+          style: invis # Make this node invisible

@@ -72,7 +72,7 @@ outputs:
           // "Pressure coupling incorrect number of values (I need exactly 1)"
           config["mdin"]["nstlim"] = inputs.nstlim;
           config["mdin"]["dt"] = inputs.dt;
-          config["mdin"]["temp0"] = inputs.temp0 //Javascript interprets dash as subtract...
+          config["mdin"]["temp0"] = inputs.temp0
           config["mdin"]["pres0"] = inputs.pres0;
           return JSON.stringify(config);
         }
