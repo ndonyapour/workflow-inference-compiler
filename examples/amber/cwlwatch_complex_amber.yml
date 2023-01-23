@@ -3,7 +3,7 @@ steps:
       in:
         #cachedir_path: /absolute/path/to/cachedir/ (automatically filled in by wic)
         file_pattern: 'complex_prod.crd' # This * is a glob wildcard, NOT an explicit edge!
-        cwl_tool: analysis_realtime_protein_amber.yml
+        cwl_tool: anal_rlt_protein_amber.yml
         max_times: '20'
         config:
           '(1, cpptraj_strip_ambmask)': {in: {input_top_path: complex_ions.prmtop, input_traj_path: complex_prod.crd}}

@@ -44,7 +44,7 @@ steps:
         output_rst_path: '&complex_prod.rst7'
         output_log_path: '&amb_prod.log'
         config: '*config_tag_mdin_prod'
-  - cwl_watcher_analysis_amber.yml:
+  - cwlwatch_anal_amber.yml:
 
 wic:
   graphviz:
@@ -58,7 +58,7 @@ wic:
       wic:
         graphviz:
           label: 'Molecular\nDynamics'
-    (4, cwl_watcher_analysis_amber.yml):
+    (4, cwlwatch_anal_amber.yml):
       wic:
         backend: protein
         graphviz:
