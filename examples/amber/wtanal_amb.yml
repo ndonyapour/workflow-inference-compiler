@@ -3,13 +3,13 @@ wic:
   backends:
     protein:
       steps:
-        - cwlwatch_protein_amber.yml:
+        - wtprotein_amb.yml:
     ligand:
       steps:
-        - cwlwatch_ligand_amber.yml:
+        - wtligand_amb.yml:
     complex:
       steps:
-        - cwlwatch_complex_amber.yml:
+        - wtcomplex_amb.yml:
   graphviz:
     label: 'Real-time\nAnalysis'
     style: invis # Make this graph (and all subgraphs) invisible

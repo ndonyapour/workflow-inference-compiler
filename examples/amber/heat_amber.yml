@@ -20,7 +20,7 @@ steps:
             ig: -1      # Seed for pseudo-random number generator
             ioutfm: 1   # ioutfm 0: ascii, 1: binary
             iwrap: 1    # Wrap coords into primary box
-            nstlim: 200 #10000        # Number of MD steps
+            nstlim: 10000        # Number of MD steps
             dt: 0.002          # Time step (in ps)
             tempi: 0.0         # Initial temperature (0 K)
             temp0: 298.0       # Final temperature (298 K)

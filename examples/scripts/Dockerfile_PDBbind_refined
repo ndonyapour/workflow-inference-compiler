@@ -10,6 +10,6 @@ RUN MINICONDA="Miniconda3-latest-Linux-x86_64.sh" && \
     rm -f $MINICONDA
 ENV PATH /miniconda/bin:$PATH
 RUN conda install -c conda-forge pandas
-ADD generate_pdbbind_complex.py .
-ADD Dockerfile_PDBbind_refined .
+ADD generate_pdbbind_complex.py ./
+ADD Dockerfile_PDBbind_refined ./
 

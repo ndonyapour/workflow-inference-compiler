@@ -1,0 +1,8 @@
+steps:
+  - heat_amber.yml:
+  - nvt_amber.yml:
+  - npt_amber.yml:
+
+wic:
+  graphviz:
+    label: Equilibration

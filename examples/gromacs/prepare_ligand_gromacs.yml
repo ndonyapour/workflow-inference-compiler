@@ -37,6 +37,7 @@ wic:
   steps:
     (1, minimize_ligand_only.yml):
       wic:
+        inlineable: False # Due to yml wic tag inlineing issue and ~input_path
         graphviz:
           label: Add Hydrogen Atoms\n and Minimize Ligand
     (2, python3_calculate_net_charge):

@@ -25,7 +25,7 @@ steps:
   - create_complex_amber.yml:
   - stability_amber.yml:
       in:
-        nsteps: 200
+        nsteps: 10000
         dt: 0.002 # ps
         temperature: 298.0 # K
         pressure: 1.0  #
@@ -35,14 +35,16 @@ wic:
   steps:
     (1, pdb):
       wic:
+        inlineable: False # Due to yml wic tag inlineing issue and ~ inputs
         graphviz:
           label: Load Complex PDB File
     (2, extract_molecule):
       wic:
         graphviz:
           label: Extract Protein
-    (3, prepare_protein.yml):
+    (3, prepare_protein_amber.yml):
       wic:
+        inlineable: False # Due to yml wic tag inlineing issue and ~ inputs
         graphviz:
           label: Fix Protein
     (4, extract_heteroatoms):
@@ -51,17 +53,40 @@ wic:
           label: Extract Ligand
     (5, python3_rename_ligand_pdb):
       wic:
+        inlineable: False # Due to yml wic tag inlineing issue and ~ inputs
         graphviz:
           label: Rename Ligand\Residue to MOL
     (6, prepare_ligand_amber.yml):
       wic:
+        inlineable: False # Due to yml wic tag inlineing issue and ~ inputs
         graphviz:
           label: Generate Ligand\nTopology & Parameters
     (7, create_complex_amber.yml):
       wic:
+        inlineable: False # Due to yml wic tag inlineing issue and ~ inputs
         graphviz:
           label: Create Complex\nTopology & Parameters
-    (8, stability):
+    # (8, stability_amber.yml):
+    #   wic:
+    #     inlineable: False # Due to yml wic tag inlineing issue and ~ inputs
+    #     graphviz:
+    #       label: Minimize, Equilibrate the System
+    (8, stability_amber.yml):
       wic:
-        graphviz:
-          label: Minimize, Equilibrate the System
+        inlineable: False # Due to yml wic tag inlineing issue and ~ inputs
+        steps:
+          (2, basic_amber.yml):
+            wic:
+              steps:
+                (3, prod_amber.yml):
+                  wic:
+                    steps:
+                      (4, wtanal_amb.yml ):
+                        wic:
+                          backend: protein
+          (7, anal_amber.yml):
+            wic:
+              steps:
+                (1, analysis_realtime.yml):
+                  wic:
+                    backend:  protein

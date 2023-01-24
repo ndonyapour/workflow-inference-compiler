@@ -27,4 +27,4 @@ RUN cp AutoDock-Vina/build/linux/release/vina /usr/bin/
 RUN conda install -c conda-forge numpy boost-cpp swig
 RUN cd AutoDock-Vina/build/python && python setup.py build install
 
-ADD Dockerfile_vina .
+ADD Dockerfile_vina ./

@@ -1,0 +1,23 @@
+inputs:
+  nsteps:
+    type: int
+  dt:
+    type: float
+  temperature:
+    type: float
+  pressure:
+    type: float
+
+steps:
+  - min_amber.yml:
+  - equil_amber.yml:
+  - prod_amber.yml:
+      in:
+        nsteps: ~nsteps
+        dt: ~dt # ps
+        temperature: ~temperature # K
+        pressure: ~pressure  #
+
+wic:
+  graphviz:
+    label: Molecular Dynamics

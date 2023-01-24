@@ -43,10 +43,11 @@ wic:
       wic:
         graphviz:
           label: Extract Protein
-    (3, prepare_protein.yml):
+    (3, prepare_protein_gromacs.yml):
       wic:
+        inlineable: False # Due to yml wic tag inlineing issue and ~ inputs
         graphviz:
-          label: Prepare Protein
+          label: Fix Protein
     (4, extract_heteroatoms):
       wic:
         graphviz:
@@ -55,16 +56,33 @@ wic:
       wic:
         graphviz:
          label: Molecular Dynamics Setup
-    (6, prepare_ligand_gromacs):
+    (6, prepare_ligand_gromacs.yml):
       wic:
+        inlineable: False # Due to yml wic tag inlineing issue and ~ inputs
         graphviz:
           label: Generate Ligand\nTopology & Parameters
-    (7, create_complex_gromacs):
+    (7, create_complex_gromacs.yml):
       wic:
+        inlineable: False # Due to yml wic tag inlineing issue and ~ inputs
         graphviz:
           label: Create Complex\nTopology & Parameters
-    (8, stability):
+    (8, stability.yml):
       wic:
-        graphviz:
-          label: Minimize, Equilibrate the System
+        inlineable: False # Due to yml wic tag inlineing issue and ~ inputs
+        steps:
+          (2, basic.yml):
+            wic:
+              steps:
+                (3, prod.yml):
+                  wic:
+                    steps:
+                      (4, cwl_watcher_analysis.yml):
+                        wic:
+                          backend: protein
+          (3, analysis.yml):
+            wic:
+              steps:
+                (1, analysis_realtime.yml):
+                  wic:
+                    backend:  protein
 

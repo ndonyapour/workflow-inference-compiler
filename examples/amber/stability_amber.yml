@@ -14,19 +14,18 @@ steps:
         input_pdb_path: '*complex_min_vac.pdb'
         input_lib_path: '*ligand_params.lib'
         input_frcmod_path: '*ligand_params.frcmod'
-  - min_amber.yml:
-  - heat_amber.yml:
-  - nvt_amber.yml:
-  - npt_amber.yml:
-  - prod_amber.yml:
+  - basic_amber.yml:
       in:
         nsteps: ~nsteps
         dt: ~dt # ps
         temperature: ~temperature # K
         pressure: ~pressure  #
-
   - anal_amber.yml:
 
 wic:
   graphviz:
     label: Molecular Dynamics Stability Analysis
+  steps:
+    (1, setup_amber.yml):
+      wic:
+        inlineable: False # Due to yml wic tag inlineing issue and ~ inputs

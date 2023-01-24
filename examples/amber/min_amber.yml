@@ -19,7 +19,7 @@ steps:
             ig: -1     # Seed for pseudo-random number generator
             ioutfm: 0  # ioutfm 0: ascii, 1: binary
             iwrap: 1   # Wrap coords into primary box
-            maxcyc: 200 #10000  # The maximum number of cycles of minimization.
+            maxcyc: 10000  # The maximum number of cycles of minimization.
             ntpr: 1  # Print to the Amber mdout output file every ntpr cycles
             ntwx: 1  # Write coordinates trajectory file every ntwx cycles
             ntwr: 1  # Write restrt file every ntwr cyles
