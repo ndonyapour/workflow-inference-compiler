@@ -25,7 +25,7 @@ steps:
   - create_complex_amber.yml:
   - stability_amber.yml:
       in:
-        nsteps: 10000
+        nsteps: 100 # MD timesteps. Decreasing the number of timesteps (1000) for the sake of time.
         dt: 0.002 # ps
         temperature: 298.0 # K
         pressure: 1.0  #

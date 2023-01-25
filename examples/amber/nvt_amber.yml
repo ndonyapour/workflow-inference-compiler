@@ -20,7 +20,7 @@ steps:
             ig: -1      # Seed for pseudo-random number generator
             ioutfm: 1   # ioutfm 0: ascii, 1: binary
             iwrap: 1    # Wrap coords into primary box
-            nstlim: 10000     # Number of MD steps
+            nstlim: 100     # Number of MD steps. Decreasing the number of timesteps (1000) for the sake of time.
             dt: 0.002        # Time step (in ps)
             temp0: 298.0     # Temperature (298 K)
             gamma_ln: 2.0    # Collision frequency for Langevin dynamics (in 1/ps)
