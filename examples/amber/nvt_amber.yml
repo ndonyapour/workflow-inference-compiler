@@ -1,0 +1,69 @@
+steps:
+  - sander_mdrun:
+      in:
+        input_top_path: '*complex_ions.prmtop'
+        input_crd_path: '*complex_heat.rst7'
+        input_ref_path: '*complex_heat.rst7'
+        output_traj_path: '&complex_nvt.crd'
+        output_rst_path: '&complex_nvt.rst7'
+        output_log_path: '&amb_nvt.log'
+        config:
+          mdin:
+            imin: 0     # No minimization
+            ntx: 5      # Read coordinates and velocities from ASCII formatted rst7 coordinate file
+            irest: 1    # Can only restart if there velocities...
+            cut: 10.0   # Cutoff for non bonded interactions in Angstroms
+            ntb: 1      # Periodic boundary conditions at constant volume
+            ntc: 2      # SHAKE for constraining length of bonds involving Hydrogen atoms
+            ntf: 2      # Bond interactions involving H omitted
+            ntt: 3      # Constant temperature using Langevin dynamics
+            ig: -1      # Seed for pseudo-random number generator
+            ioutfm: 1   # ioutfm 0: ascii, 1: binary
+            iwrap: 1    # Wrap coords into primary box
+            nstlim: 100     # Number of MD steps. Decreasing the number of timesteps (1000) for the sake of time.
+            dt: 0.002        # Time step (in ps)
+            temp0: 298.0     # Temperature (298 K)
+            gamma_ln: 2.0    # Collision frequency for Langevin dynamics (in 1/ps)
+            ntpr: 100       # Print to the Amber mdout output file every ntpr cycles
+            ntwx: 100       # Write coordinates trajectory file every ntwx cycles
+            ntwr: 100       # Write restrt file every ntwr cyles
+            ntxo: 1          # Format of the final coordinates, velocities, and box siz, default is 1
+            ntr: 1           # Turn on positional restraint
+            restraintmask: "!:WAT,Cl-,Na+ & !@H=" # Restraining solute heavy atoms
+            restraint_wt: 5.0  #With a force constant of 5 Kcal/mol*A2
+  - process_mdout:
+      in:
+        input_log_path: '*amb_nvt.log'
+        config:
+          terms: ['TEMP']
+        output_dat_path: temp_nvt.dat
+  - cwl_watcher:
+      in:
+        #cachedir_path: /absolute/path/to/cachedir/ (automatically filled in by wic)
+        file_pattern: '*amb_nvt.log'
+        cwl_tool: process_mdout
+        max_times: '20'
+        config:
+          in:
+            input_log_path: amb_nvt.log
+            config:
+              terms: ['TEMP']
+            output_dat_path: temp_nvt.dat
+
+wic:
+  graphviz:
+    label: Constant\nVolume
+  steps:
+    (1, sander_mdrun):
+      wic:
+        graphviz:
+          label: 'Molecular\nDynamics'
+    (2, process_mdout):
+      wic:
+        graphviz:
+          label: 'Analyze & Plot\nTemperature\nTimeseries'
+    (3, cwl_watcher):
+      wic:
+        graphviz:
+          label: 'Real-time\nAnalysis'
+          style: invis # Make this node invisible

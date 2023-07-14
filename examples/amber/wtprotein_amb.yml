@@ -1,0 +1,20 @@
+steps:
+  - cwl_watcher:
+      in:
+        #cachedir_path: /absolute/path/to/cachedir/ (automatically filled in by wic)
+        file_pattern: 'complex_prod.crd' # This * is a glob wildcard, NOT an explicit edge!
+        cwl_tool: anal_rlt_protein_amber.yml
+        max_times: '20'
+        config:
+          '(1, cpptraj_rms)': {in: {input_top_path: complex_ions.prmtop, input_traj_path: complex_prod.crd}}
+          '(2, cpptraj_rms)': {in: {input_top_path: complex_ions.prmtop, input_traj_path: complex_prod.crd}}
+          '(3, cpptraj_rms)': {in: {input_top_path: complex_ions.prmtop, input_traj_path: complex_prod.crd}}
+          '(4, cpptraj_rgyr)': {in: {input_top_path: complex_ions.prmtop, input_traj_path: complex_prod.crd}}
+          '(5, process_mdout)': {in: {input_log_path: amb_prod.log}}
+
+wic:
+  steps:
+    (1, cwl_watcher):
+      wic:
+        graphviz:
+          style: invis # Make this node invisible

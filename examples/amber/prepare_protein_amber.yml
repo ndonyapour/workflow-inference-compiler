@@ -1,0 +1,21 @@
+steps:
+  - fix_amides:
+      in:
+        input_pdb_path: "*protein.pdb"
+        output_pdb_path: '&protein_fix_amides.pdb'
+  - fix_side_chain:
+      in:
+        output_pdb_path: "&protein_fix_side_chain.pdb"
+
+wic:
+  graphviz:
+    label: Prepare Protein
+  steps:
+    (1, fix_amides):
+      wic:
+        graphviz:
+          label: 'Fix Amides'
+    (2, fix_side_chain):
+      wic:
+        graphviz:
+          label: 'Fix Side Chains'

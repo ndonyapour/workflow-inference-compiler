@@ -1,0 +1,55 @@
+inputs:
+  input_pdb_path:
+    type: File
+    format:
+    - edam:format_1476
+  input_lib_path:
+    type: File
+    format:
+    - edam:format_3889
+  input_frcmod_path:
+    type: File
+    format:
+    - edam:format_3888
+
+steps:
+  - leap_solvate:
+      in:
+        input_pdb_path: ~input_pdb_path
+        input_lib_path: ~input_lib_path
+        input_frcmod_path: ~input_frcmod_path
+        output_pdb_path: '&complex_solv.pdb'
+        output_top_path: '&complex_sol.prmtop'
+        output_crd_path: '&complex_solv.rst7'
+        config:
+          forcefield : ["protein.ff14SB","gaff"]
+          water_type: TIP3PBOX
+          distance_to_molecule: 12.0 # A
+          box_type: cubic
+          iso: True
+  - leap_add_ions:
+      in:
+        input_pdb_path: '*complex_solv.pdb'
+        input_lib_path: ~input_lib_path
+        input_frcmod_path: ~input_frcmod_path
+        output_pdb_path: '&complex_ions.pdb'
+        output_top_path: '&complex_ions.prmtop'
+        output_crd_path: '&complex_ions.rst7'
+        config:
+          forcefield: ["protein.ff14SB","gaff"]
+          neutralise: True
+          ionic_concentration: 50  #mMol/liter
+          box_type: cubic
+
+wic:
+  graphviz:
+    label: System Setup
+  steps:
+    (1, leap_solvate):
+      wic:
+        graphviz:
+          label: 'Add Water\nSolvent'
+    (2, leap_add_ions):
+      wic:
+        graphviz:
+          label: 'Neutralize &\nAdd Ions'

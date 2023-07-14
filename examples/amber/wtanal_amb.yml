@@ -1,0 +1,15 @@
+wic:
+  default_backend: protein
+  backends:
+    protein:
+      steps:
+        - wtprotein_amb.yml:
+    ligand:
+      steps:
+        - wtligand_amb.yml:
+    complex:
+      steps:
+        - wtcomplex_amb.yml:
+  graphviz:
+    label: 'Real-time\nAnalysis'
+    style: invis # Make this graph (and all subgraphs) invisible
