@@ -487,8 +487,12 @@ def compile_workflow_once(yaml_tree_ast: YamlTree,
                 inputs_file_workflow.update({in_name: in_dict})
                 steps[i][step_key]['in'][arg_key] = {'source': in_name}
                 continue
-
-            in_dict = utils_cwl.copy_cwl_input_output_dict(in_tool[arg_key], True)
+            # check if the argument name is correct
+            if arg_key in in_tool:
+                in_dict = utils_cwl.copy_cwl_input_output_dict(in_tool[arg_key], True)
+            else:
+                raise Exception(f'Error! The "{step_key}" step in "{yaml_stem}.yml" '
+                                f'does not have an argument named "{arg_key}".')
 
             if isinstance(arg_val, Dict) and arg_val['source'][0] == '~':
                 # NOTE: This is somewhat of a hack; it is useful for when
