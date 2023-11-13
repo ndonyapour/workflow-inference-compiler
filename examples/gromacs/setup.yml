@@ -22,8 +22,10 @@ steps:
       input_crd_path: ~crd_path
       #input_crd_path: '*complex_vac.pdb'
       align_principal_axes: 0
+      #box_vector_lengths: [14.0181, 10.2139, 10.1643]
+      #box_vector_angles: [80, 80, 70]
       box_type: cubic
-      distance_to_molecule: 1.2
+      #distance_to_molecule: 1.2
 - solvate:
     in:
       input_top_zip_path: ~top_zip_path
@@ -57,30 +59,30 @@ steps:
       input_crd_path: '*genion.gro'
       output_str_path: 'genion.pdb'
 
-wic:
-  graphviz:
-    label: System Setup
-    ranksame:
-    - (1, gmx_editconf)
-    - (4, genion)
-  steps:
-    (1, gmx_editconf):
-      wic:
-        graphviz:
-          label: 'Initialize\nPeriodic Box'
-    (2, solvate):
-      wic:
-        graphviz:
-          label: 'Add Water\nSolvent'
-    (3, grompp):
-      wic:
-        graphviz:
-          label: 'Update\nTopology'
-    (4, genion):
-      wic:
-        graphviz:
-          label: 'Neutralize &\nAdd Ions'
-    (5, gmx_trjconv_str):
-      wic:
-        graphviz:
-          label: 'Save as PDB File'
+# wic:
+#   graphviz:
+#     label: System Setup
+#     ranksame:
+#     - (1, gmx_editconf)
+#     - (4, genion)
+#   steps:
+#     (1, gmx_editconf):
+#       wic:
+#         graphviz:
+#           label: 'Initialize\nPeriodic Box'
+#     (2, solvate):
+#       wic:
+#         graphviz:
+#           label: 'Add Water\nSolvent'
+#     (3, grompp):
+#       wic:
+#         graphviz:
+#           label: 'Update\nTopology'
+#     (4, genion):
+#       wic:
+#         graphviz:
+#           label: 'Neutralize &\nAdd Ions'
+#     (5, gmx_trjconv_str):
+#       wic:
+#         graphviz:
+#           label: 'Save as PDB File'

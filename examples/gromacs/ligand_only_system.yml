@@ -1,0 +1,23 @@
+
+steps:
+  - gmxselect: # NOTE: make_ndx does NOT work! (It erroneously selects all of the atoms.)
+      in:
+        input_structure_path: "/home/ndonyapour/projects/WIC/Znt3/prod.gro"
+        config: '{"selection": "not (group protein)"}'
+        output_ndx_path: '&ligand_olny.ndx'
+
+  - gmx_trjconv_idx:
+      in:
+        input_crd_path: "/home/ndonyapour/projects/WIC/Znt3/prod.gro"
+        input_top_path: "/home/ndonyapour/projects/WIC/Znt3/prod.gro"
+        input_index_path: "*ligand_olny.ndx"
+        output_str_path: ligand_only.gro
+  - gmx_trjconv_idx:
+      in:
+        input_crd_path: "/home/ndonyapour/projects/WIC/Znt3/prod.pdb"
+        input_top_path: "/home/ndonyapour/projects/WIC/Znt3/prod.gro"
+        input_index_path: "*ligand_olny.ndx"
+        output_str_path: ligand_only.pdb
+
+
+
